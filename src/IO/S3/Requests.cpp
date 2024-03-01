@@ -1,4 +1,7 @@
+#include <algorithm>
 #include <IO/S3/Requests.h>
+#include <aws/core/http/HttpTypes.h>
+#include <aws/s3/model/CompleteMultipartUploadRequest.h>
 
 #if USE_AWS_S3
 
@@ -50,6 +53,20 @@ Aws::Http::HeaderValueCollection CopyObjectRequest::GetRequestSpecificHeaders() 
         headers.emplace(std::move(header), std::move(value));
 
     return headers;
+}
+
+void CompleteMultipartUploadRequest::SetAdditionalCustomHeaderValue(const Aws::String& headerName, const Aws::String& headerValue)
+{
+    // S3's CompleteMultipartUpload doesn't support metadata headers so we skip adding them
+    if(!headerName.starts_with("x-amz-meta-"))
+        Model::CompleteMultipartUploadRequest::SetAdditionalCustomHeaderValue(headerName, headerValue);
+}
+
+void UploadPartRequest::SetAdditionalCustomHeaderValue(const Aws::String& headerName, const Aws::String& headerValue)
+{
+    // S3's UploadPart doesn't support metadata headers so we skip adding them
+    if(!headerName.starts_with("x-amz-meta-"))
+        Model::UploadPartRequest::SetAdditionalCustomHeaderValue(headerName, headerValue);
 }
 
 Aws::String ComposeObjectRequest::SerializePayload() const
